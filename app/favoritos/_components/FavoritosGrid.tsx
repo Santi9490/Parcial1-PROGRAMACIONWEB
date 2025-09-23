@@ -111,11 +111,6 @@ export const FavoritosGrid = () => {
                                         <CharacterItem key={`${episode.id}-${characterUrl}`} url={characterUrl} />
                                     ))}
                                 </div>
-                                {episode.characters.length > 5 && (
-                                    <p >
-                                        +{episode.characters.length - 5} personajes más
-                                    </p>
-                                )}
                             </div>
                         </div>
                     ))}
