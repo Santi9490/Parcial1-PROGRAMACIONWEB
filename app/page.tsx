@@ -1,5 +1,5 @@
 import Image from "next/image";
-import EpisodesPage from "./api/episodes/page";
+import EpisodesPage from "./episodes/page";
 import FavoritosPage from "./favoritos/page";
 import CreateEpisodePage from "./create/page";
 

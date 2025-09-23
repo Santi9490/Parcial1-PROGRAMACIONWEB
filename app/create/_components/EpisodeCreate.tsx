@@ -1,111 +1,119 @@
 'use client';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
-import z, { set } from 'zod'
+import z from 'zod';
 import { Episode } from '../../model/episodes';
-import { CharacterForm } from './CharacterForm';
+import { useEpisodes } from '@/app/hooks/useEpisodes';
 
-  const schema = z.object({
-  name: z.string(),
-  air_date: z.string(),
-  episode: z.email(),
-  url: z.string(),
-  created: z.string()
-})
+const schema = z.object({
+  name: z.string().min(6, "El título debe tener mínimo 6 caracteres"),
+  characters: z.string().regex(/^\d+-\d+-\d+-\d+-\d+$/, "Debe seguir el formato: 12-14-1-23-8 (5 IDs separados por guiones)")
+});
 
-type FormFields = z.infer<typeof schema>
-
+type FormFields = z.infer<typeof schema>;
 
 export const EpisodeForm = () => {
-
-  const {register, handleSubmit,setError, formState: {errors, isSubmitting}} = useForm<FormFields>(
-    {defaultValues: {
-      
+  const { agregarEpisodio } = useEpisodes();
+  
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isValid } } = useForm<FormFields>({
+    defaultValues: {
+      name: "",
+      characters: ""
     },
-    resolver: zodResolver(schema)
-  }
+    resolver: zodResolver(schema),
+    mode: "onChange"
+  });
 
-  )
-
-    const onSubmit: SubmitHandler<FormFields> = async (data) => {
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-        console.log(data);
-        const response = await fetch('/api', {method: 'POST', body: JSON.stringify(data) })
-        if(!response.ok) throw new Error();
-        else{
-          const author = await response.json()
-          console.log(author);
-        }
-      } catch (error) {
-        
-        setError("name", {message: 'Error en el nombre'})
-      }
-  }
-
+  const onSubmit: SubmitHandler<FormFields> = async (data) => {
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+    
+      const characterIds = data.characters.split('-');
+      const characterUrls = characterIds.map(id => `https://rickandmortyapi.com/api/character/${id}`);
+      
+      
+      const nuevoEpisodio: Episode = {
+        id: Date.now(), 
+        name: data.name,
+        air_date: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        episode: `S00E${Math.floor(Math.random() * 99) + 1}`,
+        characters: characterUrls,
+        url: `https://rickandmortyapi.com/api/episode/${Date.now()}`,
+        created: new Date().toISOString()
+      };
+      
+      
+      agregarEpisodio(nuevoEpisodio);
+      
+      
+      reset();
+      
+    } catch (error) {
+      console.error('Error al crear episodio:', error);
+    }
+  };
 
   return (
-    <div>
-      <h1>Episode Form</h1>
-      <form className="w-2/3 p-5 flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)} >
-      <label> Name </label>
-      <input 
-          {...register('name', {required: "Campo requerido"})}
-          type="text"
-          placeholder="Name"
-          className="border border-white p-2"
-      />
-      {errors.name && <span className="text-red-500">{errors.name.message}</span>}
-      <label> Date </label>
-      <input 
-          {...register('air_date', {required: "Campo requerido"})}
-          type="text"
-          placeholder="air_date"
-          className="border border-white p-2"
-      />
-      {errors.air_date && <span className='text-red-500'>{errors.air_date.message}</span>}
-      <label> Episode </label>
-      <input 
-          {...register('episode', {required: "Campo requerido"})}
-          type="text"
-          placeholder="Email"
-          className="border border-white p-2"
+    <div className="p-6">
+      <h1 >Crear Nuevo Episodio</h1>
+      
+      <form  onSubmit={handleSubmit(onSubmit)}>
+       
+        <div>
+          <label >
+            Título del Episodio
+          </label>
+          <input 
+            {...register('name')}
+            type="text"
+            placeholder="Ingrese el título (mín. 6 caracteres)"
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-        {errors.episode && <span className='text-red-500'>{errors.episode.message}</span>}
-      <label> characters </label>
-      <CharacterForm/>
-      <label>
-        url
-      </label>
-      <input 
-          {...register('url', {required: "Campo requerido"})}
-          type="string"
-          placeholder="url"
-          className="border border-white p-2"
-      />
-      {errors.url && <span className='text-red-500'>{errors.url.message}</span>}
-      <label>
-        Created
-      </label>
-      <input 
-          {...register('created', {required: "Campo requerido"})}
-          type="string"
-          className="border border-white p-2"
-      />
-      {errors.created && <span className='text-red-500'>{errors.created.message}</span>}
-          
+          {errors.name && (
+            <span className="text-red-500 text-sm">{errors.name.message}</span>
+          )}
+        </div>
 
-          <button disabled={isSubmitting} type="submit"> 
-          {
-            isSubmitting ? 'Cargando': 'Crear'
-          }  
-          </button>
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            IDs de Personajes
+          </label>
+          <input 
+            {...register('characters')}
+            type="text"
+            placeholder="Ejemplo: 12-14-1-23-8"
+            className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {errors.characters && (
+            <span className="text-red-500 text-sm">{errors.characters.message}</span>
+          )}
+          <p className="text-xs text-gray-500 mt-1">
+            Ingrese 5 IDs de personajes separados por guiones (-)
+          </p>
+        </div>
 
-          {errors.root && <span className='text-red-500'>{errors.root.message}</span>}          
+        <div className="bg-gray-50 p-3 rounded text-sm text-gray-600">
+          <p><strong>Fecha:</strong></p>
+          <p><strong>Episodio:</strong></p>
+        </div>
+        <button 
+          disabled={isSubmitting || !isValid}
+          type="submit"
+        > 
+          {isSubmitting ? 'Creando...' : 'Crear Episodio'}
+        </button>
 
-    </form>
-
-
+        {!isValid && (
+          <p >
+            Complete todos los campos correctamente para habilitar el botón
+          </p>
+        )}
+      </form>
     </div>
-  )
-}
+  );
+};
