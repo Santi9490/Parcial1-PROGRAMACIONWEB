@@ -1,6 +1,6 @@
 'use client';
 
-import { Character } from "@/app/model/episodes";
+import { Character, Episode } from "@/app/model/episodes";
 import { useState, useEffect } from "react";
 
 interface FavoritosGridProps {
@@ -8,8 +8,25 @@ interface FavoritosGridProps {
     actualizarFavoritos: () => Promise<void>;
 }
 
-export const FavoritosGrid = ({ favoritos, actualizarFavoritos }: FavoritosGridProps) => {
+export const FavoritosGrid = () => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
+    const [favoritos, setFavoritos] = useState<Episode[]>([]);
+
+    useEffect(() => {
+    actualizarFavoritos();
+    }, []);
+
+    const actualizarFavoritos = async () => {
+        try {
+        const response = await fetch('/api/favoritos');
+        const result = await response.json();
+        if (result.success) {
+            setFavoritos(result.data);
+        }
+        } catch (error) {
+        setFavoritos([]);
+        }
+    };
 
     const eliminarFavorito = async (episodeId: number) => {
         try {
@@ -39,7 +56,7 @@ export const FavoritosGrid = ({ favoritos, actualizarFavoritos }: FavoritosGridP
             }));
             return character;
         } catch (error) {
-            console.error('Error fetching character:', error);
+            console.error(error);
             return null;
         }
     }

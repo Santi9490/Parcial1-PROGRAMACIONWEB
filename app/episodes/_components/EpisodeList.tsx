@@ -8,18 +8,38 @@ interface EpisodesGridProps {
     actualizarFavoritos: () => Promise<void>;
 }
 
-export const EpisodesGrid = ({ favoritos, actualizarFavoritos }: EpisodesGridProps) => {
+export const EpisodesGrid = () => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
     const [episodes, setEpisodes] = useState<Episode[]>([]);
+
+
+    const [favoritos, setFavoritos] = useState<Episode[]>([]);
+
+    const actualizarFavoritos = async () => {
+        try {
+            const response = await fetch('/api/favoritos');
+            const result = await response.json();
+            if (result.success) {
+                setFavoritos(result.data);
+            }
+        } catch (error) {
+            setFavoritos([]);
+        }
+    };
+
     const favoritosIds = favoritos.map(ep => ep.id);
 
     useEffect(() => {
         getEpisodes();
+        actualizarFavoritos();
     }, []);
 
     const esFavorito = (episodeId: number): boolean => {
         return favoritosIds.includes(episodeId);
     };
+
+
+    
 
     const toggleFavorito = async (episode: Episode) => {
         try {
