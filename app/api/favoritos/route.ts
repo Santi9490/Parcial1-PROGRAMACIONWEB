@@ -6,9 +6,7 @@ import fs from 'fs';
 export async function GET() {
   try {
     let favoritos: Episode[] = [];
-    if (!fs.existsSync(FAVORITOS_PATH)) {
-      escribirFavoritos([]);
-    }
+    
     favoritos = leerFavoritos();
     return NextResponse.json({
       success: true,
@@ -31,13 +29,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const episode: Episode = body;
     let favoritos: Episode[] = leerFavoritos();
-    const yaEsFavorito = favoritos.some((fav: Episode) => fav.id === episode.id);
-    if (yaEsFavorito) {
-      return NextResponse.json({
-        success: false,
-        message: 'El episodio ya está en favoritos'
-      }, { status: 400 });
-    }
     favoritos.push(episode);
     escribirFavoritos(favoritos);
     return NextResponse.json({

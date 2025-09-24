@@ -72,15 +72,15 @@ export const EpisodesGrid = () => {
         const [loading, setLoading] = useState(true);
 
         useEffect(() => {
-            const fetchCharacter = async () => {
+            fetchCharacter();
+        }, [url]);
+
+        const fetchCharacter = async () => {
                 setLoading(true);
                 const char = await getCharacter(url);
                 setCharacter(char);
                 setLoading(false);
             };
-
-            fetchCharacter();
-        }, [url]);
 
         if (loading) return (
             <div >
@@ -160,7 +160,6 @@ export const EpisodesGrid = () => {
 
     return (
         <div>
-            
             <div className="space-y-4">
                 {episodes.map(episode => (
                     <div key={episode.id} >
@@ -182,7 +181,7 @@ export const EpisodesGrid = () => {
                         <div className="mt-4">
                             
                             <div>
-                                {episode.characters.slice(0, 5).map((characterUrl, index) => (
+                                {episode.characters.slice(0, 5).map((characterUrl) => (
                                     <CharacterItem key={`${episode.id}-${characterUrl}`} url={characterUrl} />
                                 ))}
                             </div>

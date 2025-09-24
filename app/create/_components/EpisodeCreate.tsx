@@ -22,11 +22,9 @@ export const EpisodeForm = () => {
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
-      // Convertir los IDs de personajes separados por guiones a URLs
       const characterIds = data.characters.split('-');
       const characterUrls = characterIds.map(id => `https://rickandmortyapi.com/api/character/${id}`);
-      
-      // Crear el nuevo episodio
+  
       const nuevoEpisodio = {
         id: Date.now(), 
         name: data.name,
@@ -41,7 +39,6 @@ export const EpisodeForm = () => {
         created: new Date().toISOString()
       };
       
-      // Enviar al API route
       const response = await fetch('/api', {
         method: 'POST',
         headers: {
@@ -53,7 +50,6 @@ export const EpisodeForm = () => {
       const result = await response.json();
 
       if (result.success) {
-        // Mostrar toast de éxito
         const toast = document.createElement('div');
         toast.textContent = `Episodio "${nuevoEpisodio.name}" creado correctamente`;
         toast.style.cssText = `
@@ -72,8 +68,6 @@ export const EpisodeForm = () => {
         setTimeout(() => {
           document.body.removeChild(toast);
         }, 3000);
-
-        // Resetear el formulario
         reset();
       } else {
         console.error('Error al crear episodio:', result.message);
@@ -124,8 +118,7 @@ export const EpisodeForm = () => {
         </div>
 
         <div className="bg-gray-50 p-3 rounded text-sm text-gray-600">
-          <p><strong>Fecha:</strong></p>
-          <p><strong>Episodio:</strong></p>
+          
         </div>
         <button 
           disabled={isSubmitting || !isValid}
