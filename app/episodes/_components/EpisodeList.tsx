@@ -15,57 +15,13 @@ export const EpisodesGrid = () => {
 
     const [favoritos, setFavoritos] = useState<Episode[]>([]);
 
-    const actualizarFavoritos = async () => {
-        try {
-            const response = await fetch('/api/favoritos');
-            const result = await response.json();
-            if (result.success) {
-                setFavoritos(result.data);
-            }
-        } catch (error) {
-            setFavoritos([]);
-        }
-    };
-
-    const favoritosIds = favoritos.map(ep => ep.id);
+    
 
     useEffect(() => {
         getEpisodes();
         actualizarFavoritos();
     }, []);
 
-    const esFavorito = (episodeId: number): boolean => {
-        return favoritosIds.includes(episodeId);
-    };
-
-
-    
-
-    const toggleFavorito = async (episode: Episode) => {
-        try {
-            if (esFavorito(episode.id)) {
-                const response = await fetch(`/api/favoritos?id=${episode.id}`, {
-                    method: 'DELETE'
-                });
-                if (response.ok) {
-                    await actualizarFavoritos();
-                }
-            } else {
-                const response = await fetch('/api/favoritos', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(episode)
-                });
-                if (response.ok) {
-                    await actualizarFavoritos();
-                }
-            }
-        } catch (error) {
-            console.error('Error al actualizar favorito:', error);
-        }
-    };
 
     const getEpisodes = async() => {
         try {
@@ -81,6 +37,12 @@ export const EpisodesGrid = () => {
             console.error('Error al obtener episodios:', error);
         }
     };
+
+    const esFavorito = (episodeId: number): boolean => {
+        return favoritosIds.includes(episodeId);
+    };
+
+    
 
     const getCharacter = async(url: string) => {
         try {
@@ -154,8 +116,50 @@ export const EpisodesGrid = () => {
         }
     };
 
+
+    const actualizarFavoritos = async () => {
+        try {
+            const response = await fetch('/api/favoritos');
+            const result = await response.json();
+            if (result.success) {
+                setFavoritos(result.data);
+            }
+        } catch (error) {
+            setFavoritos([]);
+        }
+    };
+
+    const favoritosIds = favoritos.map(ep => ep.id);
+
+
+    const toggleFavorito = async (episode: Episode) => {
+        try {
+            if (esFavorito(episode.id)) {
+                const response = await fetch(`/api/favoritos?id=${episode.id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    await actualizarFavoritos();
+                }
+            } else {
+                const response = await fetch('/api/favoritos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(episode)
+                });
+                if (response.ok) {
+                    await actualizarFavoritos();
+                }
+            }
+        } catch (error) {
+            console.error('Error al actualizar favorito:', error);
+        }
+    };
+
     return (
-        <div className="p-6">
+        <div>
             
             <div className="space-y-4">
                 {episodes.map(episode => (
