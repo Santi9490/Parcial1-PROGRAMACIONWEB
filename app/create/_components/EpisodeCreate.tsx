@@ -2,8 +2,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import z from 'zod';
-import { Episode } from '../../model/episodes';
-import { useEpisodes } from '@/app/hooks/useEpisodes';
 
 const schema = z.object({
   name: z.string().min(6, "El título debe tener mínimo 6 caracteres"),
@@ -13,8 +11,6 @@ const schema = z.object({
 type FormFields = z.infer<typeof schema>;
 
 export const EpisodeForm = () => {
-  const { agregarEpisodio } = useEpisodes();
-  
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isValid } } = useForm<FormFields>({
     defaultValues: {
       name: "",
@@ -26,14 +22,12 @@ export const EpisodeForm = () => {
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      
-    
+      // Convertir los IDs de personajes separados por guiones a URLs
       const characterIds = data.characters.split('-');
       const characterUrls = characterIds.map(id => `https://rickandmortyapi.com/api/character/${id}`);
       
-      
-      const nuevoEpisodio: Episode = {
+      // Crear el nuevo episodio
+      const nuevoEpisodio = {
         id: Date.now(), 
         name: data.name,
         air_date: new Date().toLocaleDateString('en-US', { 
@@ -47,11 +41,43 @@ export const EpisodeForm = () => {
         created: new Date().toISOString()
       };
       
-      
-      agregarEpisodio(nuevoEpisodio);
-      
-      
-      reset();
+      // Enviar al API route
+      const response = await fetch('/api', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(nuevoEpisodio)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Mostrar toast de éxito
+        const toast = document.createElement('div');
+        toast.textContent = `Episodio "${nuevoEpisodio.name}" creado correctamente`;
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: #10b981;
+          color: white;
+          padding: 12px 20px;
+          border-radius: 4px;
+          z-index: 1000;
+          font-size: 14px;
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          document.body.removeChild(toast);
+        }, 3000);
+
+        // Resetear el formulario
+        reset();
+      } else {
+        console.error('Error al crear episodio:', result.message);
+      }
       
     } catch (error) {
       console.error('Error al crear episodio:', error);

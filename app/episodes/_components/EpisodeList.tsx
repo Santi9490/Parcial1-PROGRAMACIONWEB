@@ -2,13 +2,65 @@
 
 import { Episode, Character } from "@/app/model/episodes";
 import { useEffect, useState } from "react";
-import { useFavoritos } from "@/app/hooks/useFavoritos";
-import { useEpisodes } from "@/app/hooks/useEpisodes";
 
-export const EpisodesGrid = () => {
-    const { episodes, eliminarEpisodio } = useEpisodes();
+interface EpisodesGridProps {
+    favoritos: Episode[];
+    actualizarFavoritos: () => Promise<void>;
+}
+
+export const EpisodesGrid = ({ favoritos, actualizarFavoritos }: EpisodesGridProps) => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
-    const { esFavorito, toggleFavorito } = useFavoritos();
+    const [episodes, setEpisodes] = useState<Episode[]>([]);
+    const favoritosIds = favoritos.map(ep => ep.id);
+
+    useEffect(() => {
+        getEpisodes();
+    }, []);
+
+    const esFavorito = (episodeId: number): boolean => {
+        return favoritosIds.includes(episodeId);
+    };
+
+    const toggleFavorito = async (episode: Episode) => {
+        try {
+            if (esFavorito(episode.id)) {
+                const response = await fetch(`/api/favoritos?id=${episode.id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    await actualizarFavoritos();
+                }
+            } else {
+                const response = await fetch('/api/favoritos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(episode)
+                });
+                if (response.ok) {
+                    await actualizarFavoritos();
+                }
+            }
+        } catch (error) {
+            console.error('Error al actualizar favorito:', error);
+        }
+    };
+
+    const getEpisodes = async() => {
+        try {
+            const response = await fetch('/api');
+            const result = await response.json();
+            
+            if (result.success) {
+                setEpisodes(result.data.results);
+            } else {
+                console.error('Error al obtener episodios:', result.message);
+            }
+        } catch (error) {
+            console.error('Error al obtener episodios:', error);
+        }
+    };
 
     const getCharacter = async(url: string) => {
         try {
@@ -30,6 +82,7 @@ export const EpisodesGrid = () => {
             return null;
         }
     }
+
 
     
     const CharacterItem = ({ url }: { url: string }) => {
@@ -71,6 +124,14 @@ export const EpisodesGrid = () => {
                 <span className="text-xs text-center mt-1 max-w-20 truncate">{character.name}</span>
             </div>
         );
+    };
+
+
+    const eliminarEpisodio = async (episodeId: number) => {
+        const res = await fetch(`/api/${episodeId}`, { method: 'DELETE' });
+        if (res.ok) {
+            await getEpisodes();
+        }
     };
 
     return (

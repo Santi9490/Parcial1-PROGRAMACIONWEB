@@ -1,56 +1,70 @@
 import { NextResponse } from "next/server";
 import { Episode } from "../model/episodes";
-
+import { leerEpisodios, escribirEpisodios, EPISODIOS_PATH } from "./episodiosData";
+import fs from 'fs';
 
 export async function GET() {
     try {
-        const response = await fetch('https://rickandmortyapi.com/api/episode');
-        
-        if (!response.ok) {
-            throw new Error('Error al obtener los episodios');
+        let episodios: Episode[] = [];
+        let debeRegenerar = false;
+        if (!fs.existsSync(EPISODIOS_PATH)) {
+            debeRegenerar = true;
+        } else {
+            episodios = leerEpisodios();
+            if (!Array.isArray(episodios) || episodios.length === 0) {
+                debeRegenerar = true;
+            }
         }
-        
-        const data = await response.json();
-        
+        if (debeRegenerar) {
+            const response = await fetch('https://rickandmortyapi.com/api/episode');
+            const data = await response.json();
+            episodios = data.results;
+            escribirEpisodios(episodios);
+        }
         return NextResponse.json({
             success: true,
-            data: data
+            data: {
+                results: episodios
+            }
         });
-        
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json({
             success: false,
             message: 'Error al obtener los episodios',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            error: error?.message || 'Error desconocido'
         }, { status: 500 });
     }
 }
 
-
-export async function POST(request: Request) {
+export async function POST(req: Request) {
     try {
-        const body = await request.json();
-        
-        if (!body) {
+        const nuevoEpisodio = await req.json();
+        if (!nuevoEpisodio || !nuevoEpisodio.name || !nuevoEpisodio.characters) {
             return NextResponse.json({
                 success: false,
-                message: 'No se enviaron datos'
+                message: 'Datos incompletos del episodio'
             }, { status: 400 });
         }
-        
-        console.log('Datos recibidos desde el frontend:', body);
-        
+        let episodios: Episode[] = leerEpisodios();
+        const newId = episodios.length > 0 ? Math.max(...episodios.map(ep => ep.id)) + 1 : 1;
+        const episodioCompleto: Episode = {
+            ...nuevoEpisodio,
+            id: newId,
+            url: `https://rickandmortyapi.com/api/episode/${newId}`,
+            created: new Date().toISOString()
+        };
+        episodios.push(episodioCompleto);
+        escribirEpisodios(episodios);
         return NextResponse.json({
             success: true,
-            message: 'Datos recibidos correctamente',
-            receivedData: body
+            message: 'Episodio creado correctamente',
+            data: episodioCompleto
         });
-        
-    } catch (error) {
+    } catch (error: any) {
         return NextResponse.json({
             success: false,
-            message: 'Error al procesar los datos',
-            error: error instanceof Error ? error.message : 'Error desconocido'
+            message: 'Error al crear el episodio',
+            error: error?.message || 'Error desconocido'
         }, { status: 500 });
     }
 }

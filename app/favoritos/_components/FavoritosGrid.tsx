@@ -1,27 +1,42 @@
 'use client';
 
-import { useFavoritos } from "@/app/hooks/useFavoritos";
 import { Character } from "@/app/model/episodes";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 
-export const FavoritosGrid = () => {
-    const { favoritos, eliminarFavorito } = useFavoritos();
+interface FavoritosGridProps {
+    favoritos: any[];
+    actualizarFavoritos: () => Promise<void>;
+}
+
+export const FavoritosGrid = ({ favoritos, actualizarFavoritos }: FavoritosGridProps) => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
+
+    const eliminarFavorito = async (episodeId: number) => {
+        try {
+            const response = await fetch(`/api/favoritos?id=${episodeId}`, {
+                method: 'DELETE'
+            });
+            if (response.ok) {
+                await actualizarFavoritos();
+            } else {
+                console.error('Error al eliminar favorito');
+            }
+        } catch (error) {
+            console.error('Error al eliminar favorito:', error);
+        }
+    };
 
     const getCharacter = async(url: string) => {
         try {
             if (characters[url]) {
                 return characters[url];
             }
-
             const response = await fetch(url);
             const character = await response.json();
-            
             setCharacters(prev => ({
                 ...prev,
                 [url]: character
             }));
-            
             return character;
         } catch (error) {
             console.error('Error fetching character:', error);
@@ -107,7 +122,7 @@ export const FavoritosGrid = () => {
                             </div>
                             <div className="mt-4">
                                 <div >
-                                    {episode.characters.slice(0, 5).map((characterUrl, index) => (
+                                    {episode.characters.slice(0, 5).map((characterUrl: string, index: number) => (
                                         <CharacterItem key={`${episode.id}-${characterUrl}`} url={characterUrl} />
                                     ))}
                                 </div>
@@ -120,4 +135,4 @@ export const FavoritosGrid = () => {
            
         </div>
     );
-};
+}
