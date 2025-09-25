@@ -1,11 +1,11 @@
-import { EpisodesGrid } from './_components/EpisodeList';
+import { EpisodesList } from './_components/EpisodeList';
 
 export default function EpisodesPage () {
     
 
     return (
         <div>
-            <EpisodesGrid />
+            <EpisodesList />
         </div>
     );
 };

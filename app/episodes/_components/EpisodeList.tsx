@@ -3,12 +3,7 @@
 import { Episode, Character } from "@/app/model/episodes";
 import { useEffect, useState } from "react";
 
-interface EpisodesGridProps {
-    favoritos: Episode[];
-    actualizarFavoritos: () => Promise<void>;
-}
-
-export const EpisodesGrid = () => {
+export const EpisodesList = () => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
     const [episodes, setEpisodes] = useState<Episode[]>([]);
 

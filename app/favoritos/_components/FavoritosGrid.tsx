@@ -3,10 +3,6 @@
 import { Character, Episode } from "@/app/model/episodes";
 import { useState, useEffect } from "react";
 
-interface FavoritosGridProps {
-    favoritos: any[];
-    actualizarFavoritos: () => Promise<void>;
-}
 
 export const FavoritosGrid = () => {
     const [characters, setCharacters] = useState<{[key: string]: Character}>({});
