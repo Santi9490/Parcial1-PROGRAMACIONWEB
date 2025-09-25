@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { Episode } from "../../model/episodes";
-import { leerFavoritos, escribirFavoritos, FAVORITOS_PATH } from "../favoritosData";
+import { leerFavoritos, escribirFavoritos } from "../favoritosData";
 import fs from 'fs';
 
 export async function GET() {

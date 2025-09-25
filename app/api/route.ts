@@ -1,21 +1,11 @@
 import { NextResponse } from "next/server";
 import { Episode } from "../model/episodes";
-import { leerEpisodios, escribirEpisodios, EPISODIOS_PATH } from "./episodiosData";
-import fs from 'fs';
+import { leerEpisodios, escribirEpisodios } from "./episodiosData";
 
 export async function GET() {
     try {
-        let episodios: Episode[] = [];
-        let debeRegenerar = false;
-        if (!fs.existsSync(EPISODIOS_PATH)) {
-            debeRegenerar = true;
-        } else {
-            episodios = leerEpisodios();
-            if (!Array.isArray(episodios) || episodios.length === 0) {
-                debeRegenerar = true;
-            }
-        }
-        if (debeRegenerar) {
+        let episodios: Episode[] = leerEpisodios();
+        if (!Array.isArray(episodios) || episodios.length === 0) {
             const response = await fetch('https://rickandmortyapi.com/api/episode');
             const data = await response.json();
             episodios = data.results;
