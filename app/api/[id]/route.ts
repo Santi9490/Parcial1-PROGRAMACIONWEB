@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import type { Episode } from "../../model/episodes";
 import { leerEpisodios, escribirEpisodios } from "../episodiosData";
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const episodios: Episode[] = leerEpisodios();
     const episodio = episodios.find(ep => ep.id === Number(id));
     return NextResponse.json({
@@ -27,11 +27,11 @@ export async function GET(
 }
 
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = await params;
+    const { id } = context.params;
     const episodeId = Number(id);
     let episodios: Episode[] = leerEpisodios();
     const restantes = episodios.filter(ep => ep.id !== episodeId);
