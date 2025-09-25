@@ -15,7 +15,14 @@ export async function GET(
       data: episodio
     });
   } catch (error: any) {
-    return NextResponse.json({});
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: 'Error al obtener el episodio',
+        error: error?.message || 'Error desconocido'
+      }, 
+      { status: 500 }
+    );
   }
 }
 
@@ -29,8 +36,15 @@ export async function DELETE(
     let episodios: Episode[] = leerEpisodios();
     const restantes = episodios.filter(ep => ep.id !== episodeId);
     escribirEpisodios(restantes);
-    return NextResponse.json({ });
+    return NextResponse.json({ ok: true });
   } catch (error: any) {
-    return NextResponse.json({});
+    return NextResponse.json(
+      { 
+        success: false, 
+        message: 'Error al eliminar el episodio',
+        error: error?.message || 'Error desconocido'
+      }, 
+      { status: 500 }
+    );
   }
 }

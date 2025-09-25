@@ -21,15 +21,30 @@ export async function GET() {
             episodios = data.results;
             escribirEpisodios(episodios);
         }
-        return NextResponse.json({});
+        return NextResponse.json({
+            success: true,
+            data: {
+                results: episodios
+            }
+        });
     } catch (error: any) {
-        return NextResponse.json({});
+        return NextResponse.json({
+            success: false,
+            message: 'Error al obtener los episodios',
+            error: error?.message || 'Error desconocido'
+        }, { status: 500 });
     }
 }
 
 export async function POST(req: Request) {
     try {
         const nuevoEpisodio = await req.json();
+        if (!nuevoEpisodio || !nuevoEpisodio.name || !nuevoEpisodio.characters) {
+            return NextResponse.json({
+                success: false,
+                message: 'Datos incompletos del episodio'
+            }, { status: 400 });
+        }
         let episodios: Episode[] = leerEpisodios();
         const newId = episodios.length > 0 ? Math.max(...episodios.map(ep => ep.id)) + 1 : 1;
         const episodioCompleto: Episode = {
@@ -40,8 +55,16 @@ export async function POST(req: Request) {
         };
         episodios.push(episodioCompleto);
         escribirEpisodios(episodios);
-        return NextResponse.json({  });
+        return NextResponse.json({
+            success: true,
+            message: 'Episodio creado correctamente',
+            data: episodioCompleto
+        });
     } catch (error: any) {
-        return NextResponse.json({});
+        return NextResponse.json({
+            success: false,
+            message: 'Error al crear el episodio',
+            error: error?.message || 'Error desconocido'
+        }, { status: 500 });
     }
 }
